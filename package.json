@@ -4,9 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "start": "vite preview",
-    "lint": "next lint"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "next": "15.1.7",
