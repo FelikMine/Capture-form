@@ -29,33 +29,44 @@ export default function Form () {
         all_auto_responses: false,
     });
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
+        setFormData((prevState) => ({
+            ...prevState,
             [name]: type === 'checkbox' ? checked : value,
-        });
+        }));
     };
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Здесь вы можете вызвать ваш метод для отправки данных
         console.log(formData);
-        // Пример вызова API
-        // const response = await fetch('YOUR_API_ENDPOINT', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify(formData),
-        // });
-        // const data = await response.json();
-        // console.log(data);
+
+        try {
+            const response = await fetch('APIendpoint', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+            const data = await response.json();
+            console.log(data);
+
+            if (response.status === 200) {
+
+                alert("Отправка выполнена успешно.");
+
+            } else {
+                alert("Ошибка отправки.");
+            }
+        } catch (error) {
+            console.error("Произошла ошибка при отправке данных: ", error);
+            alert("Произошла ошибка при отправке данных.");
+        }
     };
 
     function AddField() {
 
         const fields = [];
-
 
         for(const prop in formData) {
 
@@ -68,80 +79,44 @@ export default function Form () {
                 inputType = 'text';
             }
 
-            console.log("ehi");
-
             fields.push(
-                <div className="relative z-0 w-full mb-5 group">
-                     {inputType === 'checkbox' ? (
-                <>
-                    <input
-                        type={inputType}
-                        name={prop}
-                        className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        
-                        onChange={(e) => {
-                            setFormData({
-                                ...formData,
-                                [prop]: e.target.checked,
-                            });
-                        }}
-                    />
-                    <label className="ml-2 text-sm text-gray-500 dark:text-gray-400">{prop}</label>
-                </>
-            ) : (
-                <>
-                    <input
-                        type={inputType}
-                        name={prop}
-                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder=" "
-                        required
-                        onChange={(e) => {
-                            setFormData({
-                                ...formData,
-                                [prop]: e.target.value,
-                            });
-                        }}
-                    />
-                    <label className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">{prop}</label>
-                </>
-            )}
-                    {/* <input type={inputType} name={prop}
-                    className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    checked={typeof value === 'boolean' ? value : undefined} placeholder=" " required
-                    onChange={(e) => {
-                        const newValue = inputType === 'checkbox' ? e.target.checked : e.target.value;
-                        setFormData({
-                            ...formData,
-                            [prop]: newValue,
-                        });
-                    }}
-                    />
-
-                    <label
-                    className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-
-                    >{prop}</label> */}
+                <div className="relative z-0 w-full mb-5 group" key={prop}>
+                    {inputType === 'checkbox' ? (
+                        <>
+                            <input
+                                type={inputType}
+                                name={prop}
+                                checked={value as boolean}
+                                className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                onChange={handleChange}
+                            />
+                            <label className="ml-2 text-sm text-gray-500 dark:text-gray-400">{prop}</label>
+                        </>
+                    ) : (
+                        <>
+                            <input
+                                type={inputType}
+                                name={prop}
+                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                placeholder=" "
+                                value={value as string}
+                                required
+                                onChange={handleChange}
+                            />
+                            <label className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">{prop}</label>
+                        </>
+                    )}
                 </div>
             );
         }
         return <>{fields}</>
-        // const fieldLength = Object.keys(formData).length;
-        // const fields = [];
-        // for (let i = 0; i < fieldLength; i++) {
-        //     fields.push(
-        //     <div className="relative z-0 w-full mb-5 group">
-        //         <input type="email" name="floating_email" id="floating_email" className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-        //         <label htmlFor="floating_email" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email address</label>
-        //     </div>
-        //     );
-        // }
     }
 
     return (
         <>
             <form className="max-w-md mx-auto" onSubmit={handleSubmit}>
                 <AddField />
+                <button type="submit" className="bg-violet-500 hover:bg-purple-400 text-white font-bold py-2 px-4 border-b-4 border-gray-700 hover:border-gray-500 rounded">Submit</button>
             </form>
         </>
     )
