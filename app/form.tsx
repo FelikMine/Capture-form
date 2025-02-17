@@ -1,8 +1,8 @@
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 import "./form.css";
 
-export default function Form () {
-
+export default function Form() {
+    
     interface FormData {
         title: string;
         description: string;
@@ -29,6 +29,15 @@ export default function Form () {
         all_auto_responses: false,
     });
 
+    const [token, setToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        const savedToken = localStorage.getItem("authToken");
+        if (savedToken) {
+            setToken(savedToken);
+        }
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         setFormData((prevState) => ({
@@ -36,25 +45,38 @@ export default function Form () {
             [name]: type === 'checkbox' ? checked : value,
         }));
     };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(formData);
+        console.log("Отправленные данные:", { ...formData, token });
 
         try {
             const response = await fetch('APIendpoint', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(formData),
             });
+
             const data = await response.json();
-            console.log(data);
+            console.log("Ответ сервера:", data);
 
             if (response.status === 200) {
-
                 alert("Отправка выполнена успешно.");
-
+                setFormData({
+                    title: '',
+                    description: '',
+                    tags: '',
+                    budget_from: '',
+                    budget_to: '',
+                    deadline_days: '',
+                    number_of_reminders: '',
+                    private_content: '',
+                    is_hard: false,
+                    all_auto_responses: false,
+                });
             } else {
                 alert("Ошибка отправки.");
             }
@@ -65,11 +87,9 @@ export default function Form () {
     };
 
     function AddField() {
-
         const fields = [];
 
-        for(const prop in formData) {
-
+        for (const prop in formData) {
             const value = formData[prop as keyof FormData];
             let inputType: string = 'text';
 
@@ -97,9 +117,9 @@ export default function Form () {
                             <input
                                 type={inputType}
                                 name={prop}
+                                value={value as string}
                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                 placeholder=" "
-                                value={value as string}
                                 required
                                 onChange={handleChange}
                             />
@@ -109,15 +129,18 @@ export default function Form () {
                 </div>
             );
         }
-        return <>{fields}</>
+
+        return <>{fields}</>;
     }
 
     return (
         <>
             <form className="max-w-md mx-auto" onSubmit={handleSubmit}>
                 <AddField />
-                <button type="submit" className="bg-violet-500 hover:bg-purple-400 text-white font-bold py-2 px-4 border-b-4 border-gray-700 hover:border-gray-500 rounded">Submit</button>
+                <button type="submit" className="bg-violet-500 hover:bg-purple-400 text-white font-bold py-2 px-4 border-b-4 border-gray-700 hover:border-gray-500 rounded">
+                    Submit
+                </button>
             </form>
         </>
-    )
+    );
 }
