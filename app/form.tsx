@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import "./form.css";
 
 export default function Form() {
-    
     interface FormData {
         title: string;
         description: string;
@@ -29,15 +28,6 @@ export default function Form() {
         all_auto_responses: false,
     });
 
-    const [token, setToken] = useState<string | null>(null);
-
-    useEffect(() => {
-        const savedToken = localStorage.getItem("authToken");
-        if (savedToken) {
-            setToken(savedToken);
-        }
-    }, []);
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         setFormData((prevState) => ({
@@ -48,35 +38,21 @@ export default function Form() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Отправленные данные:", { ...formData, token });
+        console.log(formData);
 
         try {
             const response = await fetch('APIendpoint', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(formData),
             });
-
             const data = await response.json();
-            console.log("Ответ сервера:", data);
+            console.log(data);
 
             if (response.status === 200) {
                 alert("Отправка выполнена успешно.");
-                setFormData({
-                    title: '',
-                    description: '',
-                    tags: '',
-                    budget_from: '',
-                    budget_to: '',
-                    deadline_days: '',
-                    number_of_reminders: '',
-                    private_content: '',
-                    is_hard: false,
-                    all_auto_responses: false,
-                });
             } else {
                 alert("Ошибка отправки.");
             }
@@ -86,7 +62,7 @@ export default function Form() {
         }
     };
 
-    function AddField() {
+    const fields = useMemo(() => {
         const fields = [];
 
         for (const prop in formData) {
@@ -130,16 +106,14 @@ export default function Form() {
             );
         }
 
-        return <>{fields}</>;
-    }
+        return fields;
+    }, [formData]);
 
     return (
         <>
             <form className="max-w-md mx-auto" onSubmit={handleSubmit}>
-                <AddField />
-                <button type="submit" className="bg-violet-500 hover:bg-purple-400 text-white font-bold py-2 px-4 border-b-4 border-gray-700 hover:border-gray-500 rounded">
-                    Submit
-                </button>
+                {fields}
+                <button type="submit" className="bg-violet-500 hover:bg-purple-400 text-white font-bold py-2 px-4 border-b-4 border-gray-700 hover:border-gray-500 rounded">Submit</button>
             </form>
         </>
     );
